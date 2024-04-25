@@ -15,9 +15,9 @@ class AuthController extends Controller
             if (Auth::attempt($credentials)) {
                 $user = Auth::user();
                 $token = $user->createToken('Token Name')->accessToken;
-                return redirect()->route('dashboard');
+                return redirect()->route('dashboard')->with('success', 'Successfully logged in');
             } else {
-                return response()->json(['message' => 'Unauthorized'], 401);
+                return redirect()->back()->with('error', 'Invalid email or password');
             }
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
