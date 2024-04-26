@@ -14,15 +14,22 @@
         <button type="submit">Logout</button>
     </form>
 
-    <a href="{{ route('export_products') }}" class="btn btn-success">Export to Excel</a>
-
     <ul>
         <li><a href="{{ route('categories.index') }}">Categories</a></li>
     </ul>
 
+    <input type="text" id="searchInput" placeholder="Search by Name" onkeyup="searchProducts()">
+    <select id="categoryFilter" onchange="filterByCategory()">
+        <option value="">All Categories</option>
+        @foreach($categories as $category)
+            <option value="{{ $category->id }}">{{ $category->name }}</option>
+        @endforeach
+    </select>
+
     <!-- Display Products Table -->
     <h2>Products</h2>
     <a href="{{ route('tambah_produk') }}" class="btn btn-primary">Tambah Produk</a>
+    <a href="{{ route('export_products') }}" class="btn btn-success">Export to Excel</a>
     <table border="1">
         <thead>
             <tr>
@@ -36,12 +43,12 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="productsTableBody">
             @foreach($products as $key => $product)
             <tr>
                 <td>{{ $key + 1 }}</td>
                 <td>{{ $product->nama_produk }}</td>
-                <td>{{ $product->kategori_produk }}</td>
+                <td>{{ $product->category->name ?? '' }}</td>
                 <td class="harga-beli">{{ $product->harga_beli }}</td>
                 <td class="harga-jual">{{ $product->harga_jual }}</td>
                 <td>{{ $product->stok_produk }}</td>
@@ -108,6 +115,93 @@
             ribuan = ribuan.join('.').split('').reverse().join('');
             return 'Rp. ' + ribuan;
         }
+
+        function initializeEventListeners() {
+            document.getElementById('productsTableBody').addEventListener('click', function(event) {
+                if (event.target.matches('.edit-product')) {
+                    var productId = event.target.dataset.productId;
+                    window.location.href = '/edit_produk/' + productId;
+                } else if (event.target.matches('.delete-product')) {
+                    var productId = event.target.dataset.productId;
+                    confirmDelete(productId);
+                }
+            });
+        }
+
+        initializeEventListeners();
+
+        function filterByCategory() {
+            var categoryId = document.getElementById('categoryFilter').value;
+            if (categoryId === "") {
+                fetch('/search')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderProducts(data);
+                        initializeEventListeners();
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                fetch('/search?category_id=' + categoryId)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderProducts(data);
+                        initializeEventListeners();
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+
+
+        function searchProducts() {
+            var searchValue = document.getElementById('searchInput').value.trim();
+            if (searchValue !== '') {
+                fetch('/search?nama_produk=' + searchValue)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderProducts(data);
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                fetch('/search')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderProducts(data);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function renderProducts(products) {
+            var tableBody = document.getElementById('productsTableBody');
+            tableBody.innerHTML = '';
+
+            products.forEach(function(product, index) {
+                var row = `<tr>
+                    <td>${index + 1}</td>
+                    <td>${product.nama_produk}</td>
+                    <td>${product.kategori_produk}</td>
+                    <td class="harga-beli">${product.harga_beli}</td>
+                    <td class="harga-jual">${product.harga_jual}</td>
+                    <td>${product.stok_produk}</td>
+                    <td><img src="${product.image}" alt="Product Image" style="max-width: 100px;"></td>
+                    <td>
+                        <a href="{{ route('edit_produk', ['id' => $product->id]) }}">Edit</a>
+                        
+                        <!-- Delete Action -->
+                        <form id="deleteForm{{ $product->id }}" 
+                                method="POST" 
+                                action="{{ route('delete_produk', ['id' => $product->id]) }}" 
+                                style="display: inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button onclick="confirmDelete({{ $product->id }})">Delete</button>
+                        </form>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
     </script>
 
     <script>

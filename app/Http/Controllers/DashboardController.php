@@ -18,13 +18,15 @@ class DashboardController extends Controller
     public function index()
     {
         try {
+            $categories = Category::all();
+
             $products = Product::all();
             $products = Product::paginate(10);
             $products->each(function ($product) {
                 $product->image = $product->image ? Storage::url('/' . $product->image) : null;
             });            
 
-            return view('dashboard.dashboard', compact('products'));
+            return view('dashboard.dashboard', compact('categories', 'products'));
         } catch (\Exception $e) {
             return redirect()->route('dashboard')->with('error', 'Failed to retrieve products.');
         }
@@ -164,6 +166,40 @@ class DashboardController extends Controller
             return redirect()->route('dashboard')->with('error', 'Failed to delete product.');
         }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = Product::query()->with('category');
+
+            if ($request->has('category_id')) {
+                $query->where('kategori_produk', $request->category_id);
+            }
+
+            if ($request->has('nama_produk')) {
+                $query->where('nama_produk', 'like', '%' . $request->nama_produk . '%');
+            }
+    
+            $products = $query->get();
+
+            $products = $products->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'nama_produk' => $product->nama_produk,
+                    'kategori_produk' => $product->category ? $product->category->name : null,
+                    'harga_beli' => $product->harga_beli,
+                    'harga_jual' => $product->harga_jual,
+                    'stok_produk' => $product->stok_produk,
+                    'image' => $product->image ? Storage::url('/' . $product->image) : null,
+                ];
+            });
+
+            return response()->json($products);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch products.'], 500);
+        }
+    }
+
 
     public function export()
     {
