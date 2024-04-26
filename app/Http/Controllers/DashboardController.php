@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProductsExport;
 
 class DashboardController extends Controller
 {
@@ -160,6 +162,16 @@ class DashboardController extends Controller
             return redirect()->route('dashboard')->with('success', 'Product deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->route('dashboard')->with('error', 'Failed to delete product.');
+        }
+    }
+
+    public function export()
+    {
+        try {
+            $title = 'Data Produk';
+            return Excel::download(new ProductsExport($title), 'products.xlsx');
+        } catch (\Exception $e) {
+            return redirect()->route('dashboard')->with('error', 'Failed to export products.');
         }
     }
 }

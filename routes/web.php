@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/edit_produk/{id}', [DashboardController::class, 'edit'])->name('edit_produk');
     Route::put('/dashboard/update_produk/{id}', [DashboardController::class, 'update'])->name('update_produk');
     Route::delete('/dashboard/delete_produk/{id}', [DashboardController::class, 'destroy'])->name('delete_produk');
+    Route::get('/export-products', [DashboardController::class, 'export'])->name('export_products');
 
     // Rute Kategori
     Route::resource('categories', CategoryController::class);

@@ -14,6 +14,8 @@
         <button type="submit">Logout</button>
     </form>
 
+    <a href="{{ route('export_products') }}" class="btn btn-success">Export to Excel</a>
+
     <ul>
         <li><a href="{{ route('categories.index') }}">Categories</a></li>
     </ul>
