@@ -40,11 +40,11 @@
                 <td>{{ $key + 1 }}</td>
                 <td>{{ $product->nama_produk }}</td>
                 <td>{{ $product->kategori_produk }}</td>
-                <td>{{ $product->harga_beli }}</td>
-                <td>{{ $product->harga_jual }}</td>
+                <td class="harga-beli">{{ $product->harga_beli }}</td>
+                <td class="harga-jual">{{ $product->harga_jual }}</td>
                 <td>{{ $product->stok_produk }}</td>
-                <td><img src="{{ Storage::url('product_images/' . $product->image) }}" 
-                        alt="Product Image" style="max-width: 100px;">
+                <td>
+                    <img src="{{ $product->image }}" alt="Product Image" style="max-width: 100px;">
                 </td>
 
                 <td>
@@ -85,6 +85,26 @@
                     document.getElementById('deleteForm' + productId).submit();
                 }
             });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var hargaBeliElements = document.querySelectorAll('.harga-beli');
+            var hargaJualElements = document.querySelectorAll('.harga-jual');
+
+            hargaBeliElements.forEach(function(element) {
+                element.textContent = formatRupiah(element.textContent);
+            });
+
+            hargaJualElements.forEach(function(element) {
+                element.textContent = formatRupiah(element.textContent);
+            });
+        });
+
+        function formatRupiah(angka) {
+            var reverse = angka.toString().split('').reverse().join('');
+            var ribuan = reverse.match(/\d{1,3}/g);
+            ribuan = ribuan.join('.').split('').reverse().join('');
+            return 'Rp. ' + ribuan;
         }
     </script>
 

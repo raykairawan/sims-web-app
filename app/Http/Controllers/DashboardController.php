@@ -19,10 +19,8 @@ class DashboardController extends Controller
             $products = Product::all();
             $products = Product::paginate(10);
             $products->each(function ($product) {
-                $product->image = Storage::exists('app/public/product_images/' . $product->image) ? 
-                                   Storage::url('app/public/product_images/' . $product->image) : 
-                                   null;
-            });
+                $product->image = $product->image ? Storage::url('/' . $product->image) : null;
+            });            
 
             return view('dashboard.dashboard', compact('products'));
         } catch (\Exception $e) {
