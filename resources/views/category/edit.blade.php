@@ -3,16 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Edit Kategori</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="POST" action="{{ route('login') }}">
+    <h1>Edit Kategori</h1>
+    @if ($errors->any())
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    @endif
+    <form action="{{ route('categories.update', $category->id) }}" method="POST">
         @csrf
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
+        @method('PUT')
+        <label for="name">Nama Kategori:</label><br>
+        <input type="text" id="name" name="name" value="{{ $category->name }}"><br>
+        <button type="submit">Update</button>
     </form>
 
     <!-- SweetAlert JS -->
